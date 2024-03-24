@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import click
+import os
 from rich import print
 from rich.console import Console
 import time
@@ -15,23 +16,34 @@ def cli():
 
 
 terminal_width=int(shutil.get_terminal_size().columns)
-audio_path="sounds/notification.mp3"
-def play_sound():
-    for i in range(3):
-        sound = AudioSegment.from_file(audio_path)
-        play(sound)
-    
 
-def load_config():
+def load_config(file):
     try:
-        with open("config.json","r") as f:
+        with open(file,"r") as f:
             return json.load(f)
     except FileNotFoundError:
         return None
 
-def save_config(config):
-    with open("config.json","w") as f:
+def save_config(file,config):
+    with open(file,"w") as f:
         json.dump(config,f)
+
+def update_json():
+    files = os.listdir("sounds")
+    data={str(i+1): "sounds/"+file for i, file in enumerate(files)}
+    with open("audio.json",'w') as f:
+        json.dump(data,f,indent=4)
+
+update_json()
+
+def play_sound(audio):
+        audioconfig=load_config("audio.json")
+        config=load_config("config.json")
+        audio_path=audioconfig[str(audio)]
+        for i in range(2):
+            sound = AudioSegment.from_file(audio_path)
+            play(sound)
+    
 
 def timer(duration):
     while duration > 0:
@@ -40,15 +52,15 @@ def timer(duration):
         print(timer_str,end='\r')
         time.sleep(1)
         duration -= 1
-    play_sound()
 
 @click.command()
 @click.option('-d',prompt='Enter the duration of the pomodoro ',type=float)
 @click.option('-s',prompt='Enter the duration of short break',type=float)
 @click.option('-l',prompt='Enter the duration of the long break',type=float)
 @click.option('-c',prompt='Enter the number of cycles',type=float)
-def configure(d,s,l,c):
-    config = load_config() or {"d":25,"s":5,"l":15,"c":4}
+@click.option('-a',prompt='Enter the serial no. of the audio',type=int)
+def configure(d,s,l,c,a):
+    config = load_config("config.json") or {"d":25,"s":5,"l":15,"c":4,"a":1}
     if d:
         config["d"]=d
     if s:
@@ -57,7 +69,10 @@ def configure(d,s,l,c):
         config["l"]=l
     if c:
         config["c"]=c
-    save_config(config)
+    if a:
+        config["a"]=a
+    save_config("config.json",config)
+    update_json()
     print("Configuration saved successfully")
 
 
@@ -66,31 +81,37 @@ def configure(d,s,l,c):
 @click.option('-d', '--duration',default=None, help='Duration of pomodoro in minutes', type=float)
 @click.option('-s', '--short',default=None, help='Duration of short break in minutes', type=float)
 @click.option('-l', '--long',default=None, help='Duration of long break in minutes', type=float)
-@click.option('-c', '--cycles',default=None, help='Number of pomodoro cycles')
-def start(duration, short, long, cycles):
-    config=load_config() or {"d":25, "s":5,"l":15,"c":4}
+@click.option('-c', '--cycles',default=None, help='Number of pomodoro cycles',type=int)
+@click.option('-a','--audio',default=None,help='Serial number of the audio',type=int)
+def start(duration, short, long, cycles,audio):
+    config=load_config("config.json") or {"d":25, "s":5,"l":15,"c":4,"a":1}
     if duration is None:
-        duration=int(config["d"])
+        duration=(config["d"])
     if short is None:
-        short=int(config["s"])
+        short=(config["s"])
     if long is None:
-        long=int(config["l"])
+        long=(config["l"])
     if cycles is None:
         cycles=int(config["c"])
+    if audio is None:
+        audio=int(config["a"])
     while True:
         for cycle in range(1, int(cycles) + 1):
-            print("─"*int((terminal_width/2)-9),end='')
+            print("─"*int((terminal_width/2)-10),end='')
             print(f"[#ff85ed]Pomodoro Cycle:[/#ff85ed] {cycle}/{cycles}",end='')
             print("─"*int((terminal_width/2)-9))
             timer(duration * 60)
+            play_sound(audio)
             if cycle < int(cycles):
                 print("[#0ff0fc]Short Break![/#0ff0fc]")
                 timer(short * 60)
+                play_sound(audio)
                 print("-"*(terminal_width-17),end='')
                 print(f"Ended at {datetime.now().strftime('%I:%M %p')}")
             else:
                 print("[blue]Long Break !![/blue]")
                 timer(long * 60)
+                play_sound(audio)
                 print("-"*(terminal_width-17),end='')
                 print(f"Ended at {datetime.now().strftime('%I:%M %p')}")
         new=input("do you want to start over? : (y/n) ")
@@ -99,18 +120,35 @@ def start(duration, short, long, cycles):
         
 @click.command()
 def showconfig():
-    config=load_config()
+    update_json()
+    with open('audio.json','r') as f:
+        data=json.load(f)
+    config=load_config("config.json")
+    audio=load_config("audio.json")
     console=Console()
+    
     config_string = "\n".join([
     f"Pomodoro duration       : {config['d']}",
     f"Short break duration    : {config['s']}",
     f"Long break duration     : {config['l']}",
     f"Number of cycles        : {config['c']}"
+])
+   
+        
+    audio_string = "\n".join([
+    f"{1}    : {audio['1']}",
+    f"Short break duration    : {audio['2']}",
+    f"Long break duration     : {audio['3']}",
+    f"Number of cycles        : {audio['4']}"
  ])
+    
     console.print("[bold white]Configuration:[/bold white]")
     console.print("┌" + "─" * (terminal_width-2) + "┐", style="blue")  
     for line in config_string.split('\n'):
         console.print(f"│ {line:<{terminal_width-4}} │", style="blue")
+    console.print(f"│ {'[white]Audio List[/white]':<{terminal_width+11}} │", style="blue")
+    for number,path in data.items():
+         console.print(f"│ {number} {path[7:]:<{terminal_width-5}}│", style="blue")
     console.print("└" + "─" * (terminal_width-2) + "┘", style="blue")
     
     
