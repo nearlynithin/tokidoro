@@ -129,7 +129,6 @@ def showconfig():
     with open('audio.json','r') as f:
         data=json.load(f)
     config=load_config("config.json")
-    audio=load_config("audio.json")
     console=Console()
     
     config_string = "\n".join([
@@ -140,15 +139,6 @@ def showconfig():
     f"Current audio           : {audio[str(config['a'])][7:]}",
     f"Repeat audio            : {config['r']}"
 ])
-   
-        
-    audio_string = "\n".join([
-    f"{1}    : {audio['1']}",
-    f"Short break duration    : {audio['2']}",
-    f"Long break duration     : {audio['3']}",
-    f"Number of cycles        : {audio['4']}"
- ])
-    
     console.print("[bold white]Configuration:[/bold white]")
     console.print("┌" + "─" * (terminal_width-2) + "┐", style="blue")  
     for line in config_string.split('\n'):
