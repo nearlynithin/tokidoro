@@ -36,11 +36,10 @@ def update_json():
 
 update_json()
 
-def play_sound(audio):
+def play_sound(audio,count):
         audioconfig=load_config("audio.json")
-        config=load_config("config.json")
         audio_path=audioconfig[str(audio)]
-        for i in range(2):
+        for i in range(count):
             sound = AudioSegment.from_file(audio_path)
             play(sound)
     
@@ -54,13 +53,14 @@ def timer(duration):
         duration -= 1
 
 @click.command()
-@click.option('-d',prompt='Enter the duration of the pomodoro ',type=float)
-@click.option('-s',prompt='Enter the duration of short break',type=float)
-@click.option('-l',prompt='Enter the duration of the long break',type=float)
-@click.option('-c',prompt='Enter the number of cycles',type=float)
-@click.option('-a',prompt='Enter the serial no. of the audio',type=int)
-def configure(d,s,l,c,a):
-    config = load_config("config.json") or {"d":25,"s":5,"l":15,"c":4,"a":1}
+@click.option('-d',prompt='Duration of the pomodoro ',type=float)
+@click.option('-s',prompt='Duration of short break',type=float)
+@click.option('-l',prompt='Duration of the long break',type=float)
+@click.option('-c',prompt='Number of cycles',type=float)
+@click.option('-a',prompt='Serial no. of the audio',type=int)
+@click.option('-r',prompt='Number of times you want the audio to repeat',type=int)
+def configure(d,s,l,c,a,r):
+    config = load_config("config.json") or {"d":25,"s":5,"l":15,"c":4,"a":1,"r":3}
     if d:
         config["d"]=d
     if s:
@@ -71,6 +71,8 @@ def configure(d,s,l,c,a):
         config["c"]=c
     if a:
         config["a"]=a
+    if r:
+        config["r"]=r
     save_config("config.json",config)
     update_json()
     print("Configuration saved successfully")
@@ -83,8 +85,9 @@ def configure(d,s,l,c,a):
 @click.option('-l', '--long',default=None, help='Duration of long break in minutes', type=float)
 @click.option('-c', '--cycles',default=None, help='Number of pomodoro cycles',type=int)
 @click.option('-a','--audio',default=None,help='Serial number of the audio',type=int)
-def start(duration, short, long, cycles,audio):
-    config=load_config("config.json") or {"d":25, "s":5,"l":15,"c":4,"a":1}
+@click.option('-r','--repeat',default=None,help='The number of times the audio needs to repeat',type=int,required=0)
+def start(duration, short, long, cycles,audio,repeat):
+    config=load_config("config.json") or {"d":25, "s":5,"l":15,"c":4,"a":1,"r":3}
     if duration is None:
         duration=(config["d"])
     if short is None:
@@ -95,23 +98,25 @@ def start(duration, short, long, cycles,audio):
         cycles=int(config["c"])
     if audio is None:
         audio=int(config["a"])
+    if repeat is None:
+        repeat=int(config["r"])
     while True:
         for cycle in range(1, int(cycles) + 1):
             print("─"*int((terminal_width/2)-10),end='')
             print(f"[#ff85ed]Pomodoro Cycle:[/#ff85ed] {cycle}/{cycles}",end='')
             print("─"*int((terminal_width/2)-9))
             timer(duration * 60)
-            play_sound(audio)
+            play_sound(audio,repeat)
             if cycle < int(cycles):
                 print("[#0ff0fc]Short Break![/#0ff0fc]")
                 timer(short * 60)
-                play_sound(audio)
+                play_sound(audio,repeat)
                 print("-"*(terminal_width-17),end='')
                 print(f"Ended at {datetime.now().strftime('%I:%M %p')}")
             else:
                 print("[blue]Long Break !![/blue]")
                 timer(long * 60)
-                play_sound(audio)
+                play_sound(audio,repeat)
                 print("-"*(terminal_width-17),end='')
                 print(f"Ended at {datetime.now().strftime('%I:%M %p')}")
         new=input("do you want to start over? : (y/n) ")
@@ -131,7 +136,9 @@ def showconfig():
     f"Pomodoro duration       : {config['d']}",
     f"Short break duration    : {config['s']}",
     f"Long break duration     : {config['l']}",
-    f"Number of cycles        : {config['c']}"
+    f"Number of cycles        : {config['c']}",
+    f"Current audio           : {audio[str(config['a'])][7:]}",
+    f"Repeat audio            : {config['r']}"
 ])
    
         
