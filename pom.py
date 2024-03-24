@@ -129,6 +129,7 @@ def showconfig():
     with open('audio.json','r') as f:
         data=json.load(f)
     config=load_config("config.json")
+    audio=load_config("audio.json")
     console=Console()
     
     config_string = "\n".join([
