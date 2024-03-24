@@ -2,9 +2,6 @@
 import click
 from rich import print
 from rich.console import Console
-from rich.layout import Layout
-from rich.table import Table
-from rich.panel import Panel
 import time
 from datetime import datetime
 from pydub import AudioSegment
@@ -16,11 +13,9 @@ import shutil
 def cli():
     pass
 
-now = datetime.now()
-terminal_width=int(shutil.get_terminal_size().columns)
-formatted_time=now.strftime("%I:%M %p")
 
-audio_path="/home/nithin/college/play/py/pomo/sounds/notification.mp3"
+terminal_width=int(shutil.get_terminal_size().columns)
+audio_path="sounds/notification.mp3"
 def play_sound():
     for i in range(3):
         sound = AudioSegment.from_file(audio_path)
@@ -92,10 +87,12 @@ def start(duration, short, long, cycles):
                 print("[#0ff0fc]Short Break![/#0ff0fc]")
                 timer(short * 60)
                 print("-"*(terminal_width-17),end='')
-                print(f"Ended at {formatted_time}")
+                print(f"Ended at {datetime.now().strftime('%I:%M %p')}")
             else:
                 print("[blue]Long Break !![/blue]")
                 timer(long * 60)
+                print("-"*(terminal_width-17),end='')
+                print(f"Ended at {datetime.now().strftime('%I:%M %p')}")
         new=input("do you want to start over? : (y/n) ")
         if new=="n":
             break
