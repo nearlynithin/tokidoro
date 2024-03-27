@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import click
-import os
+import os,sys
 from rich import print
 from rich.console import Console
 import time
@@ -34,7 +34,13 @@ def update_json():
     data = {str(i+1): os.path.join(os.path.dirname(__file__), "sounds", file) for i, file in enumerate(files)}
     with open(os.path.join(os.path.dirname(__file__), "audio.json"), 'w') as f:
         json.dump(data,f,indent=4)
-    save_config((os.path.join(os.path.dirname(__file__), "config.json")),config) 
+    if directory:
+        if not os.listdir(directory):
+            click.echo('Please save an audio file in the sounds directory')
+            sys.exit()
+    if str(config["a"]) not in data:
+        config["a"]="1"
+    save_config((os.path.join(os.path.dirname(__file__), "config.json")),config)
     
 update_json()
 
