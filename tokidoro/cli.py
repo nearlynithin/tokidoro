@@ -14,19 +14,21 @@ import shutil
 def cli():
     pass
 
+# Terminal width for output designing.
 terminal_width=int(shutil.get_terminal_size().columns)
 
+# =============functions to load a save configuration files=============
 def load_config(file):
     try:
         with open(file,"r") as f:
             return json.load(f)
     except FileNotFoundError:
         return None
-
 def save_config(file,config):
     with open(file,"w") as f:
         json.dump(config,f)
 
+# ============= function to update and save both the configuration files at the beginning  =============
 def update_json():
     config = load_config(os.path.join(os.path.dirname(__file__), "config.json"))
     directory = os.path.join(os.path.dirname(__file__), "sounds")
@@ -44,6 +46,7 @@ def update_json():
     
 update_json()
 
+# =============function to play given audio, given number of times =============
 def play_sound(audio, count):
     audioconfig = load_config(os.path.join(os.path.dirname(__file__), "audio.json"))
     audio_path = audioconfig[str(audio)]
@@ -51,7 +54,7 @@ def play_sound(audio, count):
         playsound(audio_path)
         
     
-
+# ============= Timer Duration  =============
 def timer(duration):
     while duration > 0:
         m, s = divmod(duration, 60)
@@ -60,6 +63,8 @@ def timer(duration):
         time.sleep(1)
         duration -= 1
 
+
+# ============= COMMANDS FOR TOKIDORO =============
 @click.command()
 @click.option('-d',prompt='Duration of the pomodoro ',type=float)
 @click.option('-s',prompt='Duration of short break',type=float)
@@ -85,7 +90,6 @@ def configure(d,s,l,c,a,r):
     save_config((os.path.join(os.path.dirname(__file__), "config.json")),config)
     update_json()
     print("Configuration saved successfully")
-
 
 
 @cli.command()
@@ -160,7 +164,8 @@ def showconfig():
          console.print(f"│ {number} {path[directrln+1:]:<{terminal_width-5}}│", style="blue")
     console.print("└" + "─" * (terminal_width-2) + "┘", style="blue")
     
-    
+
+
 cli.add_command(start)
 cli.add_command(configure)
 cli.add_command(showconfig)
