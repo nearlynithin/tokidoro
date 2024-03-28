@@ -1,4 +1,0 @@
-click
-playsound
-pygobject
-rich
