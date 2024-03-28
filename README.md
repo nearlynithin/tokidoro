@@ -13,8 +13,7 @@
 # Installation
 
 ```
-cd tokidoro
-pip install .
+pip install tokidoro
 ```
 
 # Features
