@@ -7,7 +7,6 @@
 `tokidoro` is simple command-line tool that implements the famous pomodoro technique to improve focus and productivity.
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
 </div>
 
