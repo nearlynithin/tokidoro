@@ -11,7 +11,7 @@
 </div>
 
 # Installation
-
+`Alert! Dependency issues. Cloning the repository is recommended`
 ```
 pip install tokidoro
 ```
